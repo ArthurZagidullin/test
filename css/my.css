@@ -1,0 +1,85 @@
+.bg-gr{
+	background-color: #f5f5f5;
+}
+.bg-w{
+	background-color: #FFFFFF;
+}
+.bg-g{
+	background-color: #2ecc71;
+}
+.bg-r{
+	background-color: #e74c3c;
+}
+.bg-y{
+	background-color: #f1c40f;
+}
+.bg-t{
+	background-color: #1abc9c;
+}
+.bg-o{
+	background-color: #f39c12;
+}
+.bg-c{
+	background-color: #ecf0f1;
+}
+.fc-w{
+	color: #ecf0f1;
+}
+.fc-gs{
+	color: #16a085;
+}
+.margin-x
+{
+	margin: 40px;
+}
+.margin-top-x{
+	margin-top: 30px;
+}
+.margin-top-m{
+	margin-top: 20px;
+}
+.nomargin{
+	margin: 0;
+}
+.nopadding{
+	padding: 0;
+}
+.padding-xx{
+	padding: 40px;
+}
+.padding-x{
+	padding: 20px;
+}
+.padding-m{
+	padding: 15px;
+}
+.padding-top-x{
+	padding-top:20px;
+}
+.padding-top-s{
+	padding-top:1px;
+}			
+.padding-title{
+	padding: 20px 0px 10px 30px;
+}
+.fnt-s-m
+{
+	font-size: 14pt;
+}
+.fnt-s-x
+{
+	font-size: 22pt;
+}
+.width-x
+{
+	width: 700px;
+}
+.progress-new
+{
+	line-height: 10px;
+        font-size: 7px;
+}
+.noborder
+{
+	border-radius: 0px;
+}
