@@ -9,6 +9,7 @@ class DB
 			return self::$db;
 		}
 		self::$db = new mysqli("localhost", "root", "", "readspeed");
+		self::$db->set_charset("utf8");
 		if (self::$db->connect_errno) {
 		    echo "Не удалось подключиться к MySQL: " . self::$db->connect_error;
 		}
