@@ -4,95 +4,119 @@ function progress(x){$("#progress").attr({"aria-valuenow":x*10, "aria-valuemin":
 function sliderCreate(sId,foo){var res = slidr.create(sId,{controls: 'none',overflow: true,theme: '#343',transition:foo}).start();return res; }
 var hash, ns = 2, text = 0, quiz = 0, fin = 0, interval = 0, time = 0,ajURL = "classes/ajax.php";
 jQuery.fn.exists = function() {   return $(this).length;}
-function wpost(msg)
-{
-	VK.api('wall.post',{message:msg},function(data) { 
-		if (data.response) { 
-			console.log(data);
-		}})
-          	console.log(data.error);
-}
 
-$(document).ready(function(){
-	var sa = sliderCreate("slidr-a","cube");  
-	// Если пришел #hash
-	$(window).bind("hashchange", function (a) {
-		
-		hash = window.location.hash.substring(1);
-		if(hash){
-                  	console.log(hash);
-                  	if(hash == "finish"){ }
-			else if (hash == "text" && text == 0 ) { //#text
-				var s = 0, m = 0, t = 0, ms = $("#showMinute"), ss = $("#showSecond"), tm = $("#time");
-				//$.post()
-				nextSlide(sa,hash); clearAdr(); 
-       			$.post(ajURL,
-       					{action:"begin"},
-       					function(data){
-       						console.log(data);
-       						interval = setInterval(function()
+/* Смена слайдов тут */
+$(document).ready(function(){								// грузится дом-дерево
+	var sa = sliderCreate("slidr-a","cube"); 				// главный слайд
+	$(window).bind("hashchange", function (a) { 			// Если изменился #hash
+		hash = window.location.hash.substring(1);	
+		if(hash){  	console.log(hash);						// постим hash в консольку
+            if(hash == "finish"){ }							// если #finish
+			else if (hash == "text" && text == 0 ) { 		// если #text и переменна finish == 0, то есть этот блок отрабатывает только один раз
+			/* объявляем всякие переменные */
+				var s = 0,								// тут секунды
+				m = 0,									// тут минуты
+				t = 0,									// тут общее время
+				ms = $("#showMinute"),					// объект для показа минут пользователю
+				ss = $("#showSecond"),					// в этом показываем секунды
+				tm = $("#time");						// а тут видимо время
+
+				nextSlide(sa,hash);							// перелистываем слайд на текст
+				clearAdr(); 								// очищаем строку с адресом
+
+			/* при помощи AJAX уведомляем о генерации текста сервер */
+       			$.post(ajURL,								// адрес в переменной ajURL, объявлена где-то наверху
+       					{action:"begin"},					// передаем параметр 'begin', будет доступен на сервере в $_POST['ation']
+       					function(data){							// обрабатываем ответ
+       						console.log(data);					// выводим ответ в консольку
+       						interval = setInterval(function()	// запускаем таймер записываем его идентификатор в глобальную переменную interval
 								{
-									if (s/60 == 1) 
+									if (s == 60)			// если натикало 60 секунд
 									{
 										s=0;
-										m++;
-										ms.html(m);
+										m++;				// увеличиваем минуту на 1
+										ms.html(m);			// обновляем поле с минутами в браузере пользователя
 									};
-									ss.html(s);
-									tm.attr("value", t);
+									ss.html(s);				// показываем секунды
+									tm.attr("value", t);	// поле время, будет отправлено на сервер, хз зачем это надо
 									t++;
 									s++;
-									++time;
+									++time;					// чеза выебон?
 								},
-								1000
+								1000		// таймер проводит иттерацию каждые 1000 милисекунд, то есть 1 секунда
 								);
        					})
 			}
-			else if ( hash == "quiz" && quiz == 0 ) {			 //#quiz
-				nextSlide(sa,hash); clearAdr(); text++; quiz++;
-       			$.post(ajURL,	// Замутить глобальную переменную URL
-       					{action:"end"},
-       					function(data){
-       						console.log(data);
-							clearInterval(interval);
+			else if ( hash == "quiz" && quiz == 0 ) {				// сюда пользователь переходит из слайда #text передав запрос с #quiz
+				nextSlide(sa,hash);									// перелистываем главный слайд
+				clearAdr();
+				text++; quiz++;										// блокируем повторный переход на слайды #text и #quiz
+			/* AJAX-запрос пользователь закончил читать, сервер должен это знать */
+       			$.post(ajURL,										// переменная с адресом где-то наверху
+       					{action:"end"},								// на сервере $_POST['begin'] == 'end'
+       					function(data){								// обрабатываем ответ
+       						console.log(data);						// ответ от сервера в консольку
+							clearInterval(interval);				// убиваем таймер, что отматывает время
        					})
-				
-				var sq = sliderCreate("slidr-q","cube"), foo = $("input");
-			    foo.change(function(){
-			    	progress(ns);
-			    	if(ns == 10){ns++}	// Костыль
-			    	nextSlide(sq,ns);
-			    	ns++;
+			/* опрос или QUIZ, погнали */
+				var sq = sliderCreate("slidr-q","cube"),	// слайдер с вопросами @sq
+				foo = $("input");							// принимаем все инпуты на странице, !!я боюсь, что функция избыточна, т.к. радиобутоны опроса не единственные input на странице
+			    foo.change(function(){							// функция реагирует на изменение input, конкретно в моем случае на выбор radiobutton
+			    	progress(ns);								// если пользователь выбрал вариант увеличиваем шкалу progress !!увеличение начинается сразу с 20%
+			    	if(ns == 10){ns++}							// @ns -- указатель на вопрос, т.е если ns = 1, то показывается первый вопрос. Костыль
+			    	nextSlide(sq,ns);							// перелистываем на следующий вопрос
+			    	ns++;										// увеличиваем @ns
 			    })
 			}
-			else if ( hash == "final" && fin == 0 ) {nextSlide(sa,hash);clearAdr(); fin++}
+			else if ( hash == "final" && fin == 0 ) {nextSlide(sa,hash);clearAdr(); fin++}	// #final, хз, сюда вообще приходят?
 		}
 	})
-  function isAppUser(id)
-  {VK.api('users.isAppUser',{user_id: id},function(data) { 
-		if (data.response) { 
-			console.log(data);
-		}});
-  }
-  function createAlbum(title, desc)
-  {
-    VK.api('photos.createAlbum',{title:title,description:desc, privacy: 0},function(data) 
+/* получаем данные о пользователе */
+function getUser(id)
+{
+	VK.api('users.get',{},function(data) { 
+	if (data.response) { 
+		console.log(data);
+	}})
+	    console.log(data.error);
+	}
+}
+/* постим сообщение */
+	function wpost(msg)
+	{
+		VK.api('wall.post',{message:msg},function(data) { 
+			if (data.response) { 
+				console.log(data);
+			}})
+	          	console.log(data.error);
+	}
+/* установил ли пользователь приложение? */
+	function isAppUser(id)	//  передаем id пользователя
+	{
+		VK.api('users.isAppUser',{user_id: id},function(data) 
+		{ 
+		if (data.response) { 	console.log(data);}
+		});
+	}
+/* создает альбом */
+	function createAlbum(title, desc) // , нужно передать @title -- заголовок и @descr -- описание
+	{
+	   VK.api('photos.createAlbum',{title:title,description:desc, privacy: 0},function(data) 
 	{
 		if (data.response) { 
 		// data.response is object
 			
 		}
-         	console.log(data.error);
-          
+	        	console.log(data.error);
+	         
 	});
-  }
+	}
+/* Инициализируем API VK */
   VK.init(function() { 
-     // API initialization succeeded 
-     // Your code here 
 	
-    //var bar = isAppUser('9664895');
+    //var bar = isAppUser('9664895');	// Вроде айди юзера?
     //var test = wpost("test");		// постит посты
-    //createAlbum('Моя скорость чтения','Результаты тестов приложения https://vk.com/app4295493_9664895');
+    //createAlbum('Моя скорость чтения','Результаты тестов приложения https://vk.com/app4295493_9664895');	// Создает альбом
    // console.log(test);
     
   }, function() { 

@@ -75,7 +75,7 @@ class Text
 		$text =  preg_replace('/[^\w\s]/u', ' ', $text);
         
 		return mb_strlen( $text, 'UTF-8' );
-	} 
+	}
 }
 class Question
 {
@@ -111,7 +111,7 @@ class Question
 }
 class Option
 {
-	public $opt;
+	public $opt;	// all options @array
 	public $id;
 	public $id_question;
 	public $text_option;
@@ -164,3 +164,31 @@ class Quiz
 		return $this->speed;
 	}
 }
+<<<<<<< HEAD
+=======
+class User
+{
+	public $id;	 
+	public $rdt; // readed text
+
+	// Проверка, есть ли такой юзер
+	// Если есть, берем данные из базы
+	// Если такого нет, добавляем его в базу
+
+}
+class apiVk
+{
+	public $client_id = '4295493';						// id приложения
+	public $client_secret = 'nDq5yRKpfSjvqcu9Dc0F';		// секретный ключ
+	public $token;										// сюда токен доступа
+	function __construct()
+	{
+		$url_auth = 'https://oauth.vk.com/access_token?client_id='. $this->client_id .'&client_secret='. $this->client_id .'&v=5.21&grant_type=client_credentials'
+		$this->token = file_get_contents($url_auth);
+	}
+	function getUser()
+	{
+		$url = 'https://api.vk.com/method/users.get?&v=5.21&access_token='.$this->token;
+	}
+}
+>>>>>>> origin/php
