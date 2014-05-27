@@ -8,8 +8,12 @@ class DB
 		{
 			return self::$db;
 		}
+<<<<<<< HEAD
 		self::$db = new mysqli("localhost", "root", "", "readspeed");
 		self::$db->set_charset("utf8");
+=======
+		self::$db = new mysqli("mysql-env-4315189.jelastic.regruhosting.ru", "root", "0BdPMn3QJI", "test");
+>>>>>>> ed9258ebc492a354252f97860b7e2033e65b67a2
 		if (self::$db->connect_errno) {
 		    echo "Не удалось подключиться к MySQL: " . self::$db->connect_error;
 		}
