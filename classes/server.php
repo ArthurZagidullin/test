@@ -176,7 +176,7 @@ class apiVk
 	public $token;										// сюда токен доступа
 	function __construct()
 	{
-		$url_auth = 'https://oauth.vk.com/access_token?client_id='. $this->client_id .'&client_secret='. $this->client_id .'&v=5.21&grant_type=client_credentials'
+		$url_auth = 'https://oauth.vk.com/access_token?client_id='. $this->client_id .'&client_secret='. $this->client_id .'&v=5.21&grant_type=client_credentials';
 		$this->token = file_get_contents($url_auth);
 	}
 	function getUser()
