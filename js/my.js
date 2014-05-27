@@ -74,12 +74,13 @@ $(document).ready(function(){								// грузится дом-дерево
 /* получаем данные о пользователе */
 function getUser(id)
 {
-	VK.api('users.get',{},function(data) { 
-	if (data.response) { 
-		console.log(data);
-	}})
-	    console.log(data.error);
-	}
+	VK.api('users.get',{},
+	function(data) { 
+		if (data.response) { 
+			console.log(data);
+		}
+		console.log(data.error);
+	})
 }
 /* постим сообщение */
 	function wpost(msg)

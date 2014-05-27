@@ -9,6 +9,7 @@ class DB
 			return self::$db;
 		}
 		self::$db = new mysqli("mysql-env-4315189.jelastic.regruhosting.ru", "root", "0BdPMn3QJI", "test");
+		self::$db->set_charset("utf8");
 		if (self::$db->connect_errno) {
 		    echo "Не удалось подключиться к MySQL: " . self::$db->connect_error;
 		}
