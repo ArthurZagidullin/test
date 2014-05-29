@@ -1,31 +1,37 @@
 <?php 
 	session_start();
 	require_once('classes/server.php');
-	$text = new Text;
-	$questions = new Question($text->id);
-	$qz = new Quiz($questions);
-	if (count($_POST) >= 9) {
-		foreach ($_POST as $key => $value) {
-			$k = Lib::cutAnsw($key);
-			$v = Lib::cutAnsw($value);
-			$qz->addAnsw($k, $v);
+	if(isset($_GET['viewer_id']))
+    {
+		$user = new User($_GET['viewer_id']);
+		//print_r($user->u);
+    
+		$text = new Text($user);
+		$questions = new Question($text->id);
+		$qz = new Quiz($questions);
+		if (count($_POST) >= 9) {
+			foreach ($_POST as $key => $value) {
+				$k = Lib::cutAnsw($key);
+				$v = Lib::cutAnsw($value);
+				$qz->addAnsw($k, $v);
+			}
+			$bt = $_COOKIE['begin'];
+			$et = $_COOKIE['end'];
+			//удаляем куки
+			setcookie('begin','',time()-3600);
+			setcookie('end', time()-3600);
+    	      if(($et-$bt)<10){$t = 1;}else{$t = ($et - $bt)/60;}
+    	      	//$t = ($et - $bt)/60;	// время
+    	      	
+			$c = count($qz->ra)/10;	// правильные ответы
+			$x = $text->lenght;		// количество символов
+			$speed = $qz->result($x,$t,$c);
+			setcookie('speed',$speed,time()+3600);
+			header('Location: /#finish');
 		}
-		$bt = $_COOKIE['begin'];
-		$et = $_COOKIE['end'];
-		//удаляем куки
-		setcookie('begin','',time()-3600);
-		setcookie('end', time()-3600);
-          if(($et-$bt)<10){$t = 1;}else{$t = ($et - $bt)/60;}
-          	//$t = ($et - $bt)/60;	// время
-          	
-		$c = count($qz->ra)/10;	// правильные ответы
-		$x = $text->lenght;		// количество символов
-		$speed = $qz->result($x,$t,$c);
-		setcookie('speed',$speed,time()+3600);
-		header('Location: /#finish');
-	}
-	if ($speed = $_COOKIE['speed']) {
-		setcookie('speed','',time()-3600);
+		if ($speed = $_COOKIE['speed']) {
+			setcookie('speed','',time()-3600);
+		}
 	}
 ?>
 <!DOCTYPE html>

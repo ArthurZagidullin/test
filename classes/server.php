@@ -8,7 +8,8 @@ class DB
 		{
 			return self::$db;
 		}
-		self::$db = new mysqli("mysql-env-4315189.jelastic.regruhosting.ru", "root", "0BdPMn3QJI", "test");
+		//self::$db = new mysqli("mysql-env-4315189.jelastic.regruhosting.ru", "root", "0BdPMn3QJI", "test");
+		self::$db = new mysqli("localhost", "root", "", "readspeed");
 		self::$db->set_charset("utf8");
 		if (self::$db->connect_errno) {
 		    echo "Не удалось подключиться к MySQL: " . self::$db->connect_error;
@@ -27,40 +28,53 @@ class Lib
 }
 class Text
 {
-	public $all_texts;
+	private $db;
+	private $all_texts;
+	public $right_texts;
 	public $id;
 	public $name;
 	public $text;
 	public $lenght;
-
-	function __construct()
+	private $user;
+	function __construct(User $user)
 	{
-		$db = DB::get_instance();
-		$this->all_texts = $db->query("SELECT * FROM text")->fetch_all();
+		$this->db = DB::get_instance();
+		$this->user = $user;
+		$this->all_texts = $this->db->query("SELECT * FROM text")->fetch_all();	// Все тексты из базы
+		/* рандомный текст */
 		$rnd_text = $this->rnd();
 		$this->id = $rnd_text[0];
 		$this->text = $rnd_text[1];
 		$this->name = $rnd_text[2];
+		/********************/
 		$this->lenght = $this->get_lenght($this->text);
 	}
-	function rnd()
+	private function rnd()
 	{
-		$rnd_text = $this->all_texts[array_rand($this->all_texts)];
-		while ( $this->check_text($rnd_text[0])  !== TRUE) {
-			$rnd_text = $this->all_texts[array_rand($this->all_texts)];
-		}
-		return $rnd_text;
+		$this->check_text();
+		return  $this->right_texts[array_rand($this->right_texts)];
 	}
-	function check_text($id)
+	function check_text()
 	{
-		$right_count = 10;
-		$qs = new Question($id);
-		$ct = count($qs->questions);
-		unset($qs);
-		if ($right_count == $ct) {
+		$right_count = 10;				// количество вопросов которое должно быть у текста
+		/*$qs = new Question($id);		
+		$ct = count($qs->questions);	// считаем сколько вопросов у текста
+		unset($qs);						
+		if ($right_count == $ct) {		// если вопросов достаточно вернем TRUE
 			return TRUE;
 		}
-		return FALSE;
+		return FALSE;*/
+		foreach ($this->all_texts as $key => $value) {
+			$row = $this->db->query('SELECT COUNT(id) FROM questions WHERE id_text = '.$value[0])->fetch_all();
+			//print_r($row[0][0]);
+			/*$qs = new Question($value[0]);
+			$ct = count($qs->questions);
+			unset($qs);*/
+			$ct = $row[0][0]; 			// эта хрень количество вопросов 
+			if ($ct == $right_count) {
+				$this->right_texts[] = $value;
+			}
+		}
 	}
 	function get_lenght($text)
 	{
@@ -132,7 +146,6 @@ class Read
 		$this->et = time();
 		$this->rt = $this->et - $this->bt;
 	}
-
 }
 class Quiz
 {
@@ -162,10 +175,43 @@ class Quiz
 }
 class User
 {
-	public $id;	 
-	public $rdt; // readed text
+	public $id;
+	public $u;		// user @array
+	public $uid;
+	public $reg_time;
+	public $old; 	// readed text
+	function __construct($uid)
+	{
+		if ($this->u = $this->getUser($uid)) {
+			$this->id = $this->u[0];
+			$this->uid = $this->u[1];
+			$this->reg_time = $this->u[2];
+			$this->old = $this->getOld($this->id);	// получаем прочитанное ранее
+		}
+	}
+	private function getOld($id)
+	{
+		$result = DB::get_instance()->query("SELECT * FROM old WHERE id = $id")->fetch_all();
+		if (count($result)) {
+			return $result[0];
+		}
+		return FALSE;
+	}
+	private function getUser($uid)
+	{
+		$result = DB::get_instance()->query("SELECT * FROM users WHERE uid = $uid")->fetch_all();
+		if (count($result)) {
+			return $result[0];
+		}
+		return FALSE;
+	}
+	private function setUser($uid)
+	{
+		$result = DB::get_instance()->query("INSERT INTO City ('uid','time') VALUES (".$uid.", ".time().")");
 
+	}
 	// Проверка, есть ли такой юзер
+		# Проверка на основе имени юзера и id
 	// Если есть, берем данные из базы
 	// Если такого нет, добавляем его в базу
 
@@ -177,8 +223,10 @@ class apiVk
 	public $token;										// сюда токен доступа
 	function __construct()
 	{
-		$url_auth = 'https://oauth.vk.com/access_token?client_id='. $this->client_id .'&client_secret='. $this->client_id .'&v=5.21&grant_type=client_credentials';
-		$this->token = file_get_contents($url_auth);
+		$url = "https://oauth.vk.com/access_token?client_id=4295493&client_secret=nDq5yRKpfSjvqcu9Dc0F&v=5.21&grant_type=client_credentials";
+		$resp = file_get_contents($url);
+		$data = json_decode($resp, true);
+		$this->resp = $data;
 	}
 	function getUser()
 	{
