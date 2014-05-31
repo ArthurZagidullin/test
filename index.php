@@ -1,38 +1,56 @@
 <?php 
+	/* Запускаем сессию и подключаем файл с классами */
 	session_start();
 	require_once('classes/server.php');
-	if(isset($_GET['viewer_id']))
-    {
-		$user = new User($_GET['viewer_id']);
-		//print_r($user->u);
-    
+	/* Если пришел ID пользователя запустившего приложение */
+	if (isset($_GET['viewer_id'])) {
+		$_SESSION['uid'] = htmlspecialchars($_GET['viewer_id']);	// uid -- user id
+	}
+	/* если в сессии есть UID пользователя */
+	if(isset($_SESSION['uid'])):
+		$user = new User($_SESSION['uid']);							// Создаем объект пользователя передавая его uid в конструктор
 		$text = new Text($user);
+	
 		$questions = new Question($text->id);
 		$qz = new Quiz($questions);
-		if (count($_POST) >= 9) {
+
+		/* Добавляем информацию о сессии пользователя */
+		$user->tid = $text->id;
+		/**********************************************/
+		/* Пользователь ответил на все вопросы */
+		if ((count($_POST) >= 9) && ( $bt = $_COOKIE['begin'] ) && ( $et = $_COOKIE['end'] )) {
 			foreach ($_POST as $key => $value) {
 				$k = Lib::cutAnsw($key);
 				$v = Lib::cutAnsw($value);
 				$qz->addAnsw($k, $v);
 			}
-			$bt = $_COOKIE['begin'];
-			$et = $_COOKIE['end'];
 			//удаляем куки
 			setcookie('begin','',time()-3600);
 			setcookie('end', time()-3600);
-    	      if(($et-$bt)<10){$t = 1;}else{$t = ($et - $bt)/60;}
-    	      	//$t = ($et - $bt)/60;	// время
-    	      	
-			$c = count($qz->ra)/10;	// правильные ответы
-			$x = $text->lenght;		// количество символов
-			$speed = $qz->result($x,$t,$c);
+
+    	    if(($et-$bt)<10)										// если время меньше 10 секунд, сделать 
+    	    {$rt = 1;}			
+    	  	else{$rt = ($et - $bt)/60;}			
+    	      				
+			$cu = count($qz->ra)/10;								// правильные ответы
+			$x = $text->lenght;										// количество символов
+			$speed = $qz->result($x,$rt,$cu);
+
+			/* Добавляем информацию о сессии пользователя */
+			$user->setOld($rt,$cu,$speed);
+			//print_r($qres);
+			/**********************************************/
+
 			setcookie('speed',$speed,time()+3600);
+
+			//print_r("Скорость -- ".$speed." Коэффициент понимания ".$cu."<br>");
+			//print_r($qz->ra);
 			header('Location: /#finish');
 		}
 		if ($speed = $_COOKIE['speed']) {
 			setcookie('speed','',time()-3600);
 		}
-	}
+		//var_dump($speed);
 ?>
 <!DOCTYPE html>
 <html>
@@ -40,20 +58,20 @@
 		<title>
 			Проверка скорости чтения
 		</title>
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<link rel="stylesheet" href="css/my.css">
-		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+		<script src="js/jquery-1.3.2.min.js"></script>
 		<script type="text/javascript" src="/js/slidr.min.js"></script>
 		<script src="js/my.js"></script>
-		<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-          <script src="//vk.com/js/api/xd_connection.js?2"  type="text/javascript"></script>
+		<script src="js/bootstrap.min.js"></script>
+        <script src="//vk.com/js/api/xd_connection.js?2"  type="text/javascript"></script>
 	</head>
 	<body class="container-fluid nopadding">
 	<!-- Панель меню -->
 		<div class="container-fluid nopadding bg-c">
 			<div class="col-xs-8">
 				<div class="col-xs-2">
-					<a class="fc-gs" href="/?tryagain=1">
+					<a class="fc-gs" href="/">
 						<span class="glyphicon glyphicon-repeat"></span>
 					</a>
 				</div>
@@ -80,9 +98,10 @@
 
 	<!-- Контент -->
 		<div class="container-fluid nopadding">
+		
 		<!-- Слайдер 1 -->
 			<div id="slidr-a" class="width-x">
-				<?php if(isset($speed)): ?>
+				<?php if(isset($speed) && !empty($speed)): ?>
 					<div data-slidr="finish" class="width-x">
 						<div class="col-md-8 panel panel-default margin-x">
 						  <div class="panel-body">
@@ -104,6 +123,7 @@
                                           console.log('Чо та');
                           		</script>
 				<?php endif; ?>
+				<?php if(!$text->sorry): ?>
 				<div data-slidr="welcome" class="width-x">
 					<div class="panel panel-default padding-top-s noborder">
 					  <div class="panel-heading noborder">Добро пожаловать!</div>
@@ -121,6 +141,7 @@
 					  </div>
 					</div>
 				</div>
+
 				<div data-slidr="text">
 					<?php require_once('view/Text.php'); ?>
 				</div>
@@ -142,11 +163,21 @@
 					<!-- конец Слайдер 2 -->
 					</form>
 				</div>
+			<?php else: ?>
+				<div data-slidr="sorry" class="col-md-8 panel panel-default margin-x">
+				  <div class="panel-body">
+				   <div class="text-center">
+						<p><?=$text->sorry?></p>
+					</div>
+				  </div>
+				</div>
+		<?php endif; ?>
 			</div>
 		<!-- конец Слайдер 1 -->
+
 		</div>
 	<!-- Конец котент -->
 
 	</body>
 </html>
-
+<?php endif; ?>

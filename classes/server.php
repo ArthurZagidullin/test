@@ -35,46 +35,43 @@ class Text
 	public $name;
 	public $text;
 	public $lenght;
-	private $user;
+	public $sorry;
 	function __construct(User $user)
 	{
+		/* Получаем все тексты из базы */
 		$this->db = DB::get_instance();
-		$this->user = $user;
-		$this->all_texts = $this->db->query("SELECT * FROM text")->fetch_all();	// Все тексты из базы
-		/* рандомный текст */
-		$rnd_text = $this->rnd();
-		$this->id = $rnd_text[0];
-		$this->text = $rnd_text[1];
-		$this->name = $rnd_text[2];
-		/********************/
-		$this->lenght = $this->get_lenght($this->text);
+		$result = $this->db->query("SELECT * FROM text");
+		$this->all_texts = $result->fetch_all();
+		/*******************************/
+		if ($this->right_texts = $this->check_text($this->all_texts, $user->old)) {	// <== полный ппц
+			/* рандомный текст */
+			$rnd_text = $this->rnd();
+			/************************/
+			$this->id = $rnd_text[0];
+			$this->text = $rnd_text[1];
+			$this->name = $rnd_text[2];
+			/********************/
+			$this->lenght = $this->get_lenght($this->text);
+		}
+		else{
+			$this->sorry = "Извините, нет доступных текстов, вы прочли их все. Заходите позже :)";
+		}
 	}
 	private function rnd()
 	{
-		$this->check_text();
 		return  $this->right_texts[array_rand($this->right_texts)];
 	}
-	function check_text()
+	function check_text($all_texts, $old = array())
 	{
 		$right_count = 10;				// количество вопросов которое должно быть у текста
-		/*$qs = new Question($id);		
-		$ct = count($qs->questions);	// считаем сколько вопросов у текста
-		unset($qs);						
-		if ($right_count == $ct) {		// если вопросов достаточно вернем TRUE
-			return TRUE;
-		}
-		return FALSE;*/
-		foreach ($this->all_texts as $key => $value) {
-			$row = $this->db->query('SELECT COUNT(id) FROM questions WHERE id_text = '.$value[0])->fetch_all();
-			//print_r($row[0][0]);
-			/*$qs = new Question($value[0]);
-			$ct = count($qs->questions);
-			unset($qs);*/
-			$ct = $row[0][0]; 			// эта хрень количество вопросов 
-			if ($ct == $right_count) {
-				$this->right_texts[] = $value;
+		foreach ($all_texts as $key => $value) {
+			$row = $this->db->query("SELECT COUNT(id) FROM questions WHERE id_text = '".$value[0]."'")->fetch_all();
+			$ct = $row[0][0]; 			// эта хрень количество вопросов, достаем из массива $row
+			if ($ct == $right_count && !$this->isOld($value[0], $old)) {
+				$result[] = $value;
 			}
 		}
+		return $result;
 	}
 	function get_lenght($text)
 	{
@@ -85,6 +82,18 @@ class Text
 		$text =  preg_replace('/[^\w\s]/u', ' ', $text);
         
 		return mb_strlen( $text, 'UTF-8' );
+	}
+	function isOld($tid,$old)
+	{
+		//var_dump($old);
+		if (!empty($old)) {
+			foreach ($old as $key) {
+				if(array_search($tid, $key)){
+					return TRUE;
+				}
+			}
+		}
+		return FALSE;	
 	}
 }
 class Question
@@ -98,7 +107,7 @@ class Question
 	function __construct($text_id)
 	{
 		$db = DB::get_instance();
-		$this->questions = $db->query("SELECT * FROM questions WHERE id_text = $text_id")->fetch_all();
+		$this->questions = $db->query("SELECT * FROM questions WHERE id_text = '".$text_id."'")->fetch_all();
 	}
 	function getQ($i)
 	{
@@ -128,7 +137,7 @@ class Option
 	function __construct($id_question)
 	{
 		$db = DB::get_instance();
-		$this->opt = $db->query("SELECT * FROM options WHERE id_question = $id_question")->fetch_all();
+		$this->opt = $db->query("SELECT * FROM options WHERE id_question = '".$id_question."'")->fetch_all();
 	}
 }
 class Read
@@ -176,30 +185,40 @@ class Quiz
 class User
 {
 	public $id;
-	public $u;		// user @array
-	public $uid;
-	public $reg_time;
-	public $old; 	// readed text
-	function __construct($uid)
-	{
-		if ($this->u = $this->getUser($uid)) {
-			$this->id = $this->u[0];
-			$this->uid = $this->u[1];
-			$this->reg_time = $this->u[2];
-			$this->old = $this->getOld($this->id);	// получаем прочитанное ранее
+	public $u;											// user @array
+	public $uid;	
+	public $tid;										// text id
+	public $reg_time;	
+	public $old; 										// readed text
+	function __construct($uid)							// uid приходит как GET-параметр viewer_id если приложение запущенно вконтакте
+	{	
+			
+		if ($this->u = $this->getUser($uid)) {			// если пользователь с этим uid существует в базе getUser(#) 
+			$this->old = $this->getOld($this->u[0]);			// получаем прочитанное ранее getOld(#) возвр @array
+		}														
+		else{	
+			$this->u = $this->setUser($uid);			// иначе создаем нового пользователя setUser(#) возвращает @array
 		}
+		$this->id = $this->u[0];
+		$this->uid = $this->u[1];
+		$this->reg_time = $this->u[2];
 	}
 	private function getOld($id)
 	{
-		$result = DB::get_instance()->query("SELECT * FROM old WHERE id = $id")->fetch_all();
-		if (count($result)) {
-			return $result[0];
+		//var_dump($id); echo "<br>";
+		$result = DB::get_instance()->query("SELECT * FROM old WHERE uid = ".$id);
+		$result = $result->fetch_all();
+		//var_dump(count($result)); echo "<br>";
+		if (!empty($result)) {
+			return $result;
 		}
 		return FALSE;
 	}
 	private function getUser($uid)
 	{
-		$result = DB::get_instance()->query("SELECT * FROM users WHERE uid = $uid")->fetch_all();
+		$result = DB::get_instance()->query("SELECT * FROM users WHERE uid = '".$uid."'");
+		$result = $result->fetch_all();
+
 		if (count($result)) {
 			return $result[0];
 		}
@@ -207,14 +226,25 @@ class User
 	}
 	private function setUser($uid)
 	{
-		$result = DB::get_instance()->query("INSERT INTO City ('uid','time') VALUES (".$uid.", ".time().")");
-
+		$t = time();
+		$res = DB::get_instance()->query("INSERT INTO users (uid, time) VALUES ('".$uid."', '".$t."')");
+		if ($res) {
+			return $this->getUser($uid);
+		}
 	}
-	// Проверка, есть ли такой юзер
-		# Проверка на основе имени юзера и id
-	// Если есть, берем данные из базы
-	// Если такого нет, добавляем его в базу
-
+	function setOld($rt,$cu,$speed)
+	{
+		//tid -- text id; cu -- коэффициент понимания; rt -- read time
+		if($rt && $cu && $speed)
+		{
+			$time = time();
+			DB::get_instance()->query("INSERT INTO old (uid, tid, rt, cu, speed, time) VALUES ('".$this->id."',".$this->tid.",".$rt.",".$cu.",".$speed.",".$time.")");
+		}
+		/*
+			echo "Чето нехватает: ";
+			var_dump($rt,$cu,$speed);
+		*/
+	}
 }
 class apiVk
 {

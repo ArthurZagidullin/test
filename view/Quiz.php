@@ -17,4 +17,4 @@ for ($i=0; $i < count($questions->questions); $i++) {
 	  </div>
 	</div>
 </div>
-<?php } ?>
+<?php unset($options); } ?>
