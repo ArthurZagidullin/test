@@ -25,6 +25,17 @@ class Lib
 		$str = preg_replace("/[^0-9]/", '', $str);
 		return $str;
 	}
+	static function shuffle_assoc($list) { 
+	  if (!is_array($list)) return $list; 
+
+	  $keys = array_keys($list); 
+	  shuffle($keys); 
+	  $random = array(); 
+	  foreach ($keys as $key) 
+	    $random[$key] = $list[$key]; 
+
+	  return $random; 
+	} 
 }
 class Text
 {
@@ -137,7 +148,8 @@ class Option
 	function __construct($id_question)
 	{
 		$db = DB::get_instance();
-		$this->opt = $db->query("SELECT * FROM options WHERE id_question = '".$id_question."'")->fetch_all();
+		$result = $db->query("SELECT * FROM options WHERE id_question = '".$id_question."'")->fetch_all();
+		$this->opt = Lib::shuffle_assoc($result);
 	}
 }
 class Read

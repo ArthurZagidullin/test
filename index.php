@@ -66,7 +66,6 @@
 		<script src="js/jquery-1.3.2.min.js" type="text/javascript"></script>
 		<script type="text/javascript" src="/js/slidr.min.js"></script>
 		<script src="js/my.js" type="text/javascript"></script>
-		<script src="js/bootstrap.min.js" type="text/javascript"></script>
         <script src="//vk.com/js/api/xd_connection.js?2"  type="text/javascript"></script>
 	</head>
 	<body class="container-fluid nopadding">
