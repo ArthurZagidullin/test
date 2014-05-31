@@ -238,7 +238,8 @@ class User
 		if($rt && $cu && $speed)
 		{
 			$time = time();
-			DB::get_instance()->query("INSERT INTO old (uid, tid, rt, cu, speed, time) VALUES ('".$this->id."',".$this->tid.",".$rt.",".$cu.",".$speed.",".$time.")");
+			//var_dump($rt,$cu);
+			DB::get_instance()->query("INSERT INTO old (uid, tid, rt, cu, speed, time) VALUES (".$this->id.",".$this->tid.",".$rt.",".$cu.",".$speed.",".$time.")");
 		}
 		/*
 			echo "Чето нехватает: ";

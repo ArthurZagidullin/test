@@ -5,6 +5,7 @@
 	/* Если пришел ID пользователя запустившего приложение */
 	if (isset($_GET['viewer_id'])) {
 		$_SESSION['uid'] = htmlspecialchars($_GET['viewer_id']);	// uid -- user id
+		var_dump($_SESSION['uid'] );
 	}
 	/* если в сессии есть UID пользователя */
 	if(isset($_SESSION['uid'])):
@@ -60,10 +61,10 @@
 		</title>
 		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<link rel="stylesheet" href="css/my.css">
-		<script src="js/jquery-1.3.2.min.js"></script>
+		<script src="js/jquery-1.3.2.min.js" type="text/javascript"></script>
 		<script type="text/javascript" src="/js/slidr.min.js"></script>
-		<script src="js/my.js"></script>
-		<script src="js/bootstrap.min.js"></script>
+		<script src="js/my.js" type="text/javascript"></script>
+		<script src="js/bootstrap.min.js" type="text/javascript"></script>
         <script src="//vk.com/js/api/xd_connection.js?2"  type="text/javascript"></script>
 	</head>
 	<body class="container-fluid nopadding">
@@ -116,11 +117,13 @@
 						  </div>
 						</div>
 					</div>
-                          		<script>
-                                          var speed = $("#speed").text();
-                                          post = "Моя скорость чтения: "+speed+" символов в минуту. Измерено при помощи приложения: https://vk.com/app4295493_9664895" ; 
-                                             wpost(post);
-                                          console.log('Чо та');
+                          		<script type="text/javascript">
+                          			$(document).ready(function(){	
+                                        var speed = $("#speed").text();
+                                        post = "Моя скорость чтения: "+speed+" символов в минуту. Измерено при помощи приложения: https://vk.com/app4295493_9664895" ; 
+                                        wpost(post);
+                                        console.log('Чо та');
+                                      });
                           		</script>
 				<?php endif; ?>
 				<?php if(!$text->sorry): ?>

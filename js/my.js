@@ -70,58 +70,26 @@ $(document).ready(function(){								// грузится дом-дерево
 			}
 			else if ( hash == "final" && fin == 0 ) {nextSlide(sa,hash);clearAdr(); fin++}	// #final, хз, сюда вообще приходят?
 		}
-	})
+	})	
+/* Инициализируем API VK */
+ 	VK.init(function() {}, function() {}, '5.21'); 
 /* получаем данные о пользователе */
-function getUser(id)
-{
-	VK.api('users.get',{},
-	function(data) { 
-		if (data.response) { 
-			console.log(data);
-		}
-		console.log(data.error);
-	})
-}
-/* постим сообщение */
-	function wpost(msg)
+	function getUser(id)
 	{
-		VK.api('wall.post',{message:msg},function(data) { 
+		VK.api('users.get',{},
+		function(data) { 
 			if (data.response) { 
 				console.log(data);
-			}})
-	          	console.log(data.error);
+			}
+			console.log(data.error);
+		})
 	}
-/* установил ли пользователь приложение? */
-	function isAppUser(id)	//  передаем id пользователя
-	{
-		VK.api('users.isAppUser',{user_id: id},function(data) 
-		{ 
-		if (data.response) { 	console.log(data);}
-		});
-	}
-/* создает альбом */
-	function createAlbum(title, desc) // , нужно передать @title -- заголовок и @descr -- описание
-	{
-	   VK.api('photos.createAlbum',{title:title,description:desc, privacy: 0},function(data) 
-	{
-		if (data.response) { 
-		// data.response is object
-			
-		}
-	        	console.log(data.error);
-	         
-	});
-	}
-/* Инициализируем API VK */
-  VK.init(function() { 
-	
-    //var bar = isAppUser('9664895');	// Вроде айди юзера?
-    //var test = wpost("test");		// постит посты
-    //createAlbum('Моя скорость чтения','Результаты тестов приложения https://vk.com/app4295493_9664895');	// Создает альбом
-   // console.log(test);
-    
-  }, function() { 
-     // API initialization failed 
-     // Can reload page here 
-  }, '5.21'); 
+/* постим сообщение */
+	function wpost(msg)	{	VK.api('wall.post',	{message:msg},	function(data){ if (data.response) { console.log(data) }} )	}
 })
+
+
+
+	
+	
+
