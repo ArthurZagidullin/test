@@ -5,13 +5,14 @@
 	/* Если пришел ID пользователя запустившего приложение */
 	if (isset($_GET['viewer_id'])) {
 		$_SESSION['uid'] = htmlspecialchars($_GET['viewer_id']);	// uid -- user id
-		var_dump($_SESSION['uid'] );
+		//var_dump($_SESSION['uid'] );
 	}
 	/* если в сессии есть UID пользователя */
 	if(isset($_SESSION['uid'])):
 		$user = new User($_SESSION['uid']);							// Создаем объект пользователя передавая его uid в конструктор
 		$text = new Text($user);
-	
+		$hash = isset($text->sorry)?'#sorry':'#text';
+
 		$questions = new Question($text->id);
 		$qz = new Quiz($questions);
 
@@ -51,6 +52,7 @@
 		if ($speed = $_COOKIE['speed']) {
 			setcookie('speed','',time()-3600);
 		}
+
 		//var_dump($speed);
 ?>
 <!DOCTYPE html>
@@ -110,7 +112,7 @@
 								<h2 class="">Ваша скорость чтения:</h2>
 								<h1 id="speed" class="text-success"><?=$speed?></h1>
 								<h2>символов в минуту</h2>
-								<a class="fc-gs" href="#text">
+								<a class="fc-gs" href="/<?=$hash?>">
 									<span class="glyphicon glyphicon-repeat"></span>
 								</a>
 							</div>
@@ -118,6 +120,7 @@
 						</div>
 					</div>
                           		<script type="text/javascript">
+                          			function wpost(msg)	{	VK.api('wall.post',	{message:msg},	function(data){ if (data.response) { console.log(data) }} )	}
                           			$(document).ready(function(){	
                                         var speed = $("#speed").text();
                                         post = "Моя скорость чтения: "+speed+" символов в минуту. Измерено при помощи приложения: https://vk.com/app4295493_9664895" ; 

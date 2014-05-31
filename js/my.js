@@ -12,7 +12,7 @@ $(document).ready(function(){								// грузится дом-дерево
 		hash = window.location.hash.substring(1);	
 		if(hash){  	console.log(hash);						// постим hash в консольку
             if(hash == "finish"){ }							// если #finish
-			else if (hash == "text" && text == 0 ) { 		// если #text и переменна finish == 0, то есть этот блок отрабатывает только один раз
+			else if (hash == "text" && text == 0 && interval == 0) { 		// если #text и переменна finish == 0, то есть этот блок отрабатывает только один раз
 			/* объявляем всякие переменные */
 				var s = 0,								// тут секунды
 				m = 0,									// тут минуты
@@ -68,6 +68,7 @@ $(document).ready(function(){								// грузится дом-дерево
 			    	ns++;										// увеличиваем @ns
 			    })
 			}
+			else if ( hash == "sorry" && fin == 0 ) {nextSlide(sa,hash);clearAdr();}	// #final, хз, сюда вообще приходят?	
 			else if ( hash == "final" && fin == 0 ) {nextSlide(sa,hash);clearAdr(); fin++}	// #final, хз, сюда вообще приходят?
 		}
 	})	
@@ -85,7 +86,6 @@ $(document).ready(function(){								// грузится дом-дерево
 		})
 	}
 /* постим сообщение */
-	function wpost(msg)	{	VK.api('wall.post',	{message:msg},	function(data){ if (data.response) { console.log(data) }} )	}
 })
 
 
