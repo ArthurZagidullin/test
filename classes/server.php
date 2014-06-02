@@ -1,5 +1,5 @@
 <?php
-//$db = new Mysqlidb("mysql-env-4315189.jelastic.regruhosting.ru", "root", "0BdPMn3QJI", "test");
+
 $db = new Mysqlidb('localhost', 'root', '', 'readspeed');
 class Lib
 {
