@@ -1,6 +1,7 @@
 <?php 
 	/* Запускаем сессию и подключаем файл с классами */
 	session_start();
+	require_once('classes/MysqliDb.php');
 	require_once('classes/server.php');
 	/* Если пришел ID пользователя запустившего приложение */
 	if (isset($_GET['viewer_id'])) {
@@ -10,6 +11,9 @@
 	/* если в сессии есть UID пользователя */
 	if(isset($_SESSION['uid'])):
 		$user = new User($_SESSION['uid']);							// Создаем объект пользователя передавая его uid в конструктор
+
+		//Lib::Debug($user->old);
+
 		$text = new Text($user);
 		$hash = isset($text->sorry)?'#sorry':'#text';
 
@@ -17,38 +21,46 @@
 		$qz = new Quiz($questions);
 
 		/* Добавляем информацию о сессии пользователя */
-		$user->tid = $text->id;
-		/**********************************************/
+		$user->setTid($text->id);
+
 		/* Пользователь ответил на все вопросы */
-		if ((count($_POST) >= 9) && ( $bt = $_COOKIE['begin'] ) && ( $et = $_COOKIE['end'] )) {
-			foreach ($_POST as $key => $value) {
-				$k = Lib::cutAnsw($key);
-				$v = Lib::cutAnsw($value);
-				$qz->addAnsw($k, $v);
+		if ((count($_POST) > 9) && ( $bt = $_COOKIE['begin'] ) && ( $et = $_COOKIE['end'] )) {
+
+			$qz->checkAnsw($_POST);
+
+    	    if(($et-$bt)<10)										// если время меньше 10 секунд, сделать 
+    	    	$rt = 1;		
+    	  	else
+    	  		$rt = ($et - $bt)/60;			
+    	   	//Lib::Debug($qz->ra);
+    	   	//Lib::Debug($questions->questions);
+
+    	   	$x = $text->lenght;										// количество символов
+    	   	if(($cu = count($qz->ra)) !== 0)
+			{	
+				$cu = $cu/10;										// правильные ответы
+				$speed = $qz->result($x,$rt,$cu);
 			}
-			//удаляем куки
+			else
+			{
+				$speed = 10; 	# Вы прочитайте "Войну и Мир", а я к тому времени уже помру.
+			}
+			
+
+			/* Добавляем информацию о сессии пользователя */
+			if(!$user->setOld($rt,$cu,$speed))
+				var_dump($cu,$x,$speed);
+
+			setcookie('speed',$speed,time()+3600);
 			setcookie('begin','',time()-3600);
 			setcookie('end', time()-3600);
 
-    	    if(($et-$bt)<10)										// если время меньше 10 секунд, сделать 
-    	    {$rt = 1;}			
-    	  	else{$rt = ($et - $bt)/60;}			
-    	      				
-			$cu = count($qz->ra)/10;								// правильные ответы
-			$x = $text->lenght;										// количество символов
-			$speed = $qz->result($x,$rt,$cu);
-
-			/* Добавляем информацию о сессии пользователя */
-			$user->setOld($rt,$cu,$speed);
-			//print_r($qres);
-			/**********************************************/
-
-			setcookie('speed',$speed,time()+3600);
-
 			//print_r("Скорость -- ".$speed." Коэффициент понимания ".$cu."<br>");
 			//print_r($qz->ra);
+
 			header('Location: /#finish');
 		}
+
 		if ($speed = $_COOKIE['speed']) {
 			setcookie('speed','',time()-3600);
 		}

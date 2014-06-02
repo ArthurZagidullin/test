@@ -1,29 +1,18 @@
 <?php
-class DB
-{
-	static public $db;
-	static public function get_instance()
-	{
-		if(!empty(self::$db))
-		{
-			return self::$db;
-		}
-		//self::$db = new mysqli("mysql-env-4315189.jelastic.regruhosting.ru", "root", "0BdPMn3QJI", "test");
-		self::$db = new mysqli("localhost", "root", "", "readspeed");
-		self::$db->set_charset("utf8");
-		if (self::$db->connect_errno) {
-		    echo "Не удалось подключиться к MySQL: " . self::$db->connect_error;
-		}
-		return self::$db;
-	}
-	function __construct(){}
-}
+//$db = new Mysqlidb("mysql-env-4315189.jelastic.regruhosting.ru", "root", "0BdPMn3QJI", "test");
+$db = new Mysqlidb('localhost', 'root', '', 'readspeed');
 class Lib
 {
 	static public function cutAnsw($str)
 	{
 		$str = preg_replace("/[^0-9]/", '', $str);
 		return $str;
+	}
+	static function Debug($array)
+	{
+		echo "<pre>";
+		print_r($array);
+		echo "</pre>";
 	}
 	static function shuffle_assoc($list) { 
 	  if (!is_array($list)) return $list; 
@@ -49,59 +38,59 @@ class Text
 	public $sorry;
 	function __construct(User $user)
 	{
-		/* Получаем все тексты из базы */
-		$this->db = DB::get_instance();
-		$result = $this->db->query("SELECT * FROM text");
-		$this->all_texts = $result->fetch_all();
-		/*******************************/
-		if ($this->right_texts = $this->check_text($this->all_texts, $user->old)) {	// <== полный ппц
+		/* Объект подключения к базе  */
+		$db = MysqliDb::getInstance();
+		$this->db = $db;
+		$texts = $this->getText();
+
+		if ($right_texts = $this->check_text($texts, $user->old)) {				// Возвращает массив текстов с десятью вопросами в базе и не являющихся прочитанными
 			/* рандомный текст */
-			$rnd_text = $this->rnd();
+			$rnd_text = $this->rnd($right_texts);
 			/************************/
-			$this->id = $rnd_text[0];
-			$this->text = $rnd_text[1];
-			$this->name = $rnd_text[2];
-			/********************/
-			$this->lenght = $this->get_lenght($this->text);
+			$this->id = $rnd_text['id'];
+			$this->text = $rnd_text['text'];
+			$this->name = $rnd_text['text_name'];
+			/************************/
+			$this->lenght = $this->get_lenght($rnd_text['text']);
 		}
 		else{
 			$this->sorry = "Извините, нет доступных текстов, вы прочли их все. Заходите позже :)";
 		}
 	}
-	private function rnd()
+	private function rnd($right_texts)
 	{
-		return  $this->right_texts[array_rand($this->right_texts)];
+		return $right_texts[array_rand($right_texts)];
 	}
-	function check_text($all_texts, $old = array())
+	function check_text($texts, $old = array())
 	{
-		$right_count = 10;				// количество вопросов которое должно быть у текста
-		foreach ($all_texts as $key => $value) {
-			$row = $this->db->query("SELECT COUNT(id) FROM questions WHERE id_text = '".$value[0]."'")->fetch_all();
-			$ct = $row[0][0]; 			// эта хрень количество вопросов, достаем из массива $row
-			if ($ct == $right_count && !$this->isOld($value[0], $old)) {
-				$result[] = $value;
-			}
+		$right_count = 10;
+		foreach ($texts as $k => $v) {
+			if (($v['count'] == $right_count) && !$this->isOld($v['id'], $old))
+				$right[] = $v;
 		}
-		return $result;
+		if($right)
+			return $right;
+		else
+			return FALSE;
+
+	}
+	function getText()
+	{
+		// Сложный вложеный запрос, сложный и вложеный, бичес!
+		return $this->db->rawQuery("SELECT * , (SELECT COUNT(*) FROM questions WHERE questions.id_text = text.id) as count FROM text");
 	}
 	function get_lenght($text)
 	{
-		// Убираем слова короче трех символов
-		$text = preg_replace("/\s.{0,3}\s/", "", $text);
-           
-		// Знаки припенания
-		$text =  preg_replace('/[^\w\s]/u', ' ', $text);
-        
+		$text = preg_replace("/\s.{0,3}\s/", "", $text);		// Убираем слова короче трех символов	
+		$text =  preg_replace('/[^\w\s]/u', ' ', $text);		// Знаки припенания
 		return mb_strlen( $text, 'UTF-8' );
 	}
 	function isOld($tid,$old)
 	{
-		//var_dump($old);
 		if (!empty($old)) {
 			foreach ($old as $key) {
-				if(array_search($tid, $key)){
+				if($key['tid'] == $tid)
 					return TRUE;
-				}
 			}
 		}
 		return FALSE;	
@@ -115,48 +104,53 @@ class Question
 	public $id_text;
 	public $answer;
 
-	function __construct($text_id)
+	function __construct($id_text)
 	{
-		$db = DB::get_instance();
-		$this->questions = $db->query("SELECT * FROM questions WHERE id_text = '".$text_id."'")->fetch_all();
+		$db = MysqliDb::getInstance();
+		$this->db = $db;
+
+		$db->where('id_text',$id_text);
+		$this->questions = $db->get('questions');
 	}
 	function getQ($i)
 	{
-		$this->q($this->questions[$i]);
+		return $this->q($this->questions[$i]);
 	}
 	function q($q)
 	{
-		$this->id = $q[0];
-		$this->id_text = $q[1];
-		$this->text_question = $q[2];
-		$this->answer = $q[3];
+		$this->id = $q['id'];
+		$this->id_text = $q['id_text'];
+		$this->text_question = $q['text_question'];
+		$this->answer = $q['answer'];
+		return TRUE;
 	}
 	function getQid($id)
 	{
-		if ($qk = array_search($id, $this->questions)) {
-			$this->q($this->questions[$qk]);
-			//var_dump($this->questions);
-		}
+		if ($qk = array_search($id, $this->questions))
+			return $this->q($this->questions[$qk]);
+		else
+			return FALSE;
 	}
 }
 class Option
 {
-	public $opt;	// all options @array
+	public $opt;												// all options @array
 	public $id;
 	public $id_question;
 	public $text_option;
 	function __construct($id_question)
 	{
-		$db = DB::get_instance();
-		$result = $db->query("SELECT * FROM options WHERE id_question = '".$id_question."'")->fetch_all();
-		$this->opt = Lib::shuffle_assoc($result);
+		$db = MysqliDb::getInstance();
+		$db->where('id_question',$id_question);
+		$options = $db->get('options');
+		$this->opt = Lib::shuffle_assoc($options);
 	}
 }
 class Read
 {
-	public $bt; // begin time
-	public $et; // end time
-	public $rt; // read time
+	public $bt;													// begin time
+	public $et;													// end time
+	public $rt;													// read time
 	function begin()
 	{
 		$this->bt = time();
@@ -170,100 +164,134 @@ class Read
 }
 class Quiz
 {
-	public $a;	//answer
-	public $ra;	//right answer
-	public $qs;	//questions
+	public $a;													//answer
+	public $ra;													//right answer
+	public $qs;													//questions
 	public $speed;
 	function __construct(Question $qs)
 	{
 		$this->qs = $qs;
 	}
-	function addAnsw($qi, $ai)	//qi-ид вопроса ; ai-ид ответа
+	function checkAnsw($array)
 	{
-		$qs = $this->qs->questions;
-		foreach ($qs as $k => $v) {
-			if ($v[3] == $ai) {
-				$this->ra[$qi] = $ai;
-			}
+		$q = $this->qs->questions;
+		foreach ($array as $key => $value) {
+			$aid = Lib::cutAnsw($value);							// id ответ
+			if($qid = $this->search($q, $aid))
+				$this->ra[$qid] = $aid;
 		}
-		$this->a[$qi] = $ai;
+	}
+	function search($array, $aid)
+	{
+		$i=0;
+		do
+		{
+			if($array[$i]['answer'] == $aid)
+				return $array[$i]['id'];
+		} while(++$i<count($array));
+	}
+	function addAnsw($qi, $ai)									//qi-ид вопроса ; ai-ид ответа
+	{
+
 	}
 	function result($x, $t, $c)
 	{
-		$this->speed = round(($x/$t)*$c);
-		return $this->speed;
+			$this->speed = round(($x/$t)*$c);
+			if ($this->speed)
+				return $this->speed;
+			else
+				return FALSE;
 	}
 }
 class User
 {
+	private $db;
 	public $id;
-	public $u;											// user @array
-	public $uid;	
-	public $tid;										// text id
-	public $reg_time;	
-	public $old; 										// readed text
-	function __construct($uid)							// uid приходит как GET-параметр viewer_id если приложение запущенно вконтакте
-	{	
-			
-		if ($this->u = $this->getUser($uid)) {			// если пользователь с этим uid существует в базе getUser(#) 
-			$this->old = $this->getOld($this->u[0]);			// получаем прочитанное ранее getOld(#) возвр @array
-		}														
-		else{	
-			$this->u = $this->setUser($uid);			// иначе создаем нового пользователя setUser(#) возвращает @array
-		}
-		$this->id = $this->u[0];
-		$this->uid = $this->u[1];
-		$this->reg_time = $this->u[2];
+	private $u;													// user @array
+	private $uid;		
+	private $tid;												// text id
+	private $reg_time;		
+	public $old; 												// readed text
+	function __construct($uid)									// uid приходит как GET-параметр viewer_id если приложение запущенно вконтакте
+	{		
+		/* Объект подключения к базе  */	
+		$this->db = MysqliDb::getInstance();	
+	
+		if ($this->u = $this->getUser($uid))					// если пользователь с этим uid существует в базе getUser(#) 
+			$this->old = $this->getOld($this->u['id']);					// получаем прочитанное ранее getOld(#) возвр @array										
+		else		
+			$this->u = $this->setUser($uid);					// иначе создаем нового пользователя setUser(#) возвращает @array
+
+		$this->id = $this->u['id'];
+		$this->uid = $this->u['uid'];
+		$this->reg_time = $this->u['time'];
+	}
+	function setTid($tid)
+	{
+		$this->tid = $tid;
+		return TRUE;
 	}
 	private function getOld($id)
 	{
-		//var_dump($id); echo "<br>";
-		$result = DB::get_instance()->query("SELECT * FROM old WHERE uid = ".$id);
-		$result = $result->fetch_all();
-		//var_dump(count($result)); echo "<br>";
-		if (!empty($result)) {
-			return $result;
-		}
-		return FALSE;
+		$db = $this->db;
+		$db->where('uid',$id);
+		$old = $db->get('old');
+
+		if (!is_null($old))
+			return $old;
+		else
+			return FALSE;
 	}
 	private function getUser($uid)
 	{
-		$result = DB::get_instance()->query("SELECT * FROM users WHERE uid = '".$uid."'");
-		$result = $result->fetch_all();
+		$db = $this->db;
+		$db->where('uid',$uid);
+		$user = $db->getOne('users');
 
-		if (count($result)) {
-			return $result[0];
-		}
-		return FALSE;
+		if (!is_null($user))
+			return $user;
+		else
+			return FALSE;
 	}
 	private function setUser($uid)
 	{
-		$t = time();
-		$res = DB::get_instance()->query("INSERT INTO users (uid, time) VALUES ('".$uid."', '".$t."')");
-		if ($res) {
+		$data = array(
+					'uid' => $uid,
+					'time' => time(),
+					);
+		$id = $this->db->insert('users', $data);
+		if ($id)
 			return $this->getUser($uid);
-		}
+		else
+			return FALSE;
+
 	}
 	function setOld($rt,$cu,$speed)
 	{
-		//tid -- text id; cu -- коэффициент понимания; rt -- read time
-		if($rt && $cu && $speed)
+		if($rt && $speed)
 		{
-			$time = time();
-			//var_dump($rt,$cu);
-			DB::get_instance()->query("INSERT INTO old (uid, tid, rt, cu, speed, time) VALUES (".$this->id.",".$this->tid.",".$rt.",".$cu.",".$speed.",".$time.")");
+			$data = array(
+						'uid' => $this->id,
+						'tid' => $this->tid,						// text_id
+						'rt' => $rt,								// read_time
+						'cu' => $cu,								// coeffitient_understanding
+						'speed' => $speed,
+						'time' => time(),
+						);
+			$id = $this->db->insert('old', $data);
+			//print_r($data);
+			if($id)
+				return $id;
+			else
+				return FALSE;
 		}
-		/*
-			echo "Чето нехватает: ";
-			var_dump($rt,$cu,$speed);
-		*/
 	}
 }
 class apiVk
 {
-	public $client_id = '4295493';						// id приложения
-	public $client_secret = 'nDq5yRKpfSjvqcu9Dc0F';		// секретный ключ
-	public $token;										// сюда токен доступа
+	public $client_id = '4295493';									// id приложения
+	public $client_secret = 'nDq5yRKpfSjvqcu9Dc0F';					// секретный ключ
+	public $token;													// сюда токен доступа
 	function __construct()
 	{
 		$url = "https://oauth.vk.com/access_token?client_id=4295493&client_secret=nDq5yRKpfSjvqcu9Dc0F&v=5.21&grant_type=client_credentials";
