@@ -1,3 +1,43 @@
+@font-face{
+  font-family: 'Roboto-regular';
+  src: url('/fonts/roboto/Roboto-Regular.ttf');
+
+}
+@font-face{
+  font-family: 'Roboto-thin';
+  src: url('/fonts/roboto/Roboto-Thin.ttf');
+}
+@font-face{
+  font-family: 'Roboto-light';
+  src: url('/fonts/roboto/Roboto-Light.ttf');
+} 
+@font-face{
+  font-family: 'Roboto-bolditalic';
+  src: url('/fonts/roboto/Roboto-BoldItalic.ttf');
+}
+@font-face{
+  font-family: 'Roboto-bold';
+  src: url('/fonts/roboto/Roboto-Bold.ttf');
+} 
+.fnt-r{
+  font-family: 'Roboto-regular';
+}
+.fnt-t{
+  font-family: 'Roboto-thin';
+} 
+.fnt-n{
+  font-family:"Roboto-light",Helvetica,Arial,sans-serif;
+}
+.fnt-b{
+  font-family:"Roboto-bold",Helvetica,Arial,sans-serif;
+}
+.fnt-bi{
+  font-family:"Roboto-bolditalic",Helvetica,Arial,sans-serif;
+}
+.fnt-12
+{
+	font-size: 12pt;
+}
 .bg-gr{
 	background-color: #f5f5f5;
 }
@@ -22,6 +62,10 @@
 .bg-c{
 	background-color: #ecf0f1;
 }
+.bg-bh
+{
+	background-color: #2980b9;
+}
 .fc-w{
 	color: #ecf0f1;
 }
@@ -38,6 +82,13 @@
 .margin-top-m{
 	margin-top: 20px;
 }
+.margin-top-s{
+	margin-top: 15px;
+}
+.margin-bottom-x
+{
+	margin-bottom: 30px;
+}
 .nomargin{
 	margin: 0;
 }
@@ -53,6 +104,9 @@
 .padding-m{
 	padding: 15px;
 }
+.padding-top-m{
+	padding-top:15px;
+}
 .padding-top-x{
 	padding-top:20px;
 }
@@ -64,7 +118,7 @@
 }
 .fnt-s-m
 {
-	font-size: 14pt;
+	font-size: 13pt;
 }
 .fnt-s-x
 {
@@ -74,12 +128,75 @@
 {
 	width: 700px;
 }
+.height-m
+{
+	height: 370px;
+}
 .progress-new
 {
-	line-height: 10px;
+	line-height: 12px;
         font-size: 7px;
 }
 .noborder
 {
 	border-radius: 0px;
+}
+.welcome
+{
+	padding: 45px;
+	padding-top: 6%;
+	padding-left: 60px;
+}
+.welcome-header
+{
+	font-size: 56px;
+}
+.welcome-text
+{
+	height: 53%;
+	padding-top: 14px;
+	font-size: 13pt;
+}
+.welcome-button
+{
+
+}
+.questions
+{
+	padding: 45px;
+	padding-top: 10%;
+	padding-left: 60px;
+}
+
+.final-thanks
+{
+	margin-bottom: 50px;
+	font-size: 48pt;
+}
+.result
+{
+	padding: 5% 10%;
+}
+.result-border
+{
+	border: 8px dotted;
+	border-radius: 20px;
+}
+.result-text
+{
+	margin-bottom: 15px;
+	font-size: 36px;
+}
+.result-speed
+{
+	font-size: 102pt;
+}
+.sorry
+{
+	border: 8px solid;
+	border-radius: 20px;	
+}
+.sorry-pencil
+{
+	font-size: 42pt;
 }

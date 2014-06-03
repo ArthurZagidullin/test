@@ -1,17 +1,14 @@
 <div class="">
-	<div class="panel panel-default padding-top-s">
-	  <div class="panel-heading">Внимательно прочитайте текст:</div>
-	  <div class="panel-body">
-	  	<h4> <?=$text->name?></h4>
-	  	<p>
+
+	  	<h1 class="fnt-b"> <?=$text->name?></h1>
+	  	<p class="fnt-r fnt-12">
 		   <?=$text->text?>
 	  	</p>
 	  	<br>
-	  	<div class="text-right">
-	  	 	<a href="#quiz" class="btn btn-success" role="button">Готово!</a>
+	  	<div class="text-center fnt-r fc-w">
+			<a href="#quiz" class="btn btn-success btn-lg fnt-s-x inline-block margin-top-s" role="button">Готово!</a>
 		</div>
-	  </div>
-	</div>
+
 </div>
 
 
