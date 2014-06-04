@@ -200,3 +200,23 @@
 {
 	font-size: 42pt;
 }
+#page-preloader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #FFF;
+    z-index: 10;
+    opacity: 1;
+}
+
+#page-preloader .spinner {
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    left: 50%;
+    top: 25%;
+    background: url('/img/Preloader_8.gif') no-repeat 50% 50%;
+    margin: -16px 0 0 -16px;
+}

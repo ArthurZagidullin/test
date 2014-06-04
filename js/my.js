@@ -86,11 +86,11 @@ $(document).ready(function(){												// грузится дом-дерево
 			console.log(data.error);
 		})
 	}
-/* постим сообщение */
+
+    var $preloader = $('#page-preloader'),
+        $spinner   = $preloader.find('.spinner');
+    $spinner.fadeOut();
+    $preloader.css('opacity','0,8');
+    $preloader.slideUp(1000);
+
 })
-
-
-
-	
-	
-

@@ -75,12 +75,9 @@
 		</title>
 		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<link rel="stylesheet" href="css/my.css">
-		<script src="js/jquery-1.3.2.min.js" type="text/javascript"></script>
-		<script type="text/javascript" src="/js/slidr.min.js"></script>
-		<script src="js/my.js" type="text/javascript"></script>
-        <script src="//vk.com/js/api/xd_connection.js?2"  type="text/javascript"></script>
 	</head>
-	<body class="container-fluid nopadding" style="width: 700px;">
+	<body class="container-fluid nopadding width-x">
+		<div id="page-preloader" class="width-x container-fluid"><span class="spinner"></span></div>
 	<!-- Панель меню -->
 		<div class="container-fluid nopadding bg-y">
 			<div class="col-xs-10">
@@ -125,8 +122,8 @@
                    	$(document).ready(function(){	
                               var speed = $("#speed").text();
                               post = "Моя скорость чтения: "+speed+" символов в минуту. Измерено при помощи приложения: https://vk.com/app4295493_9664895" ; 
-                              wpost(post);
-                              console.log('Чо та');
+                              /* Инициализируем API VK */
+ 								VK.init(function() { wpost(post);  console.log('Пост');}, function() {}, '5.21'); 
                             });
                    </script>
 				<?php endif; ?>
@@ -182,7 +179,10 @@
 
 		</div>
 	<!-- Конец котент -->
-
+		<script src="js/jquery-1.3.2.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="/js/slidr.min.js"></script>
+        <script src="//vk.com/js/api/xd_connection.js?2"  type="text/javascript"></script>
+        <script src="js/my.js" type="text/javascript"></script>
 	</body>
 </html>
 <?php endif; ?>
