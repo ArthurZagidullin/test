@@ -73,8 +73,7 @@ $(document).ready(function(){												// грузится дом-дерево
 			else if ( hash == "final" && fin == 0 ) {nextSlide(sa,hash);clearAdr(); fin++}	// #final, хз, сюда вообще приходят?
 		}
 	})	
-/* Инициализируем API VK */
- 	VK.init(function() {}, function() {}, '5.21'); 
+
 /* получаем данные о пользователе */
 	function getUser(id)
 	{

@@ -78,6 +78,8 @@
 	</head>
 	<body class="container-fluid nopadding width-x">
 		<div id="page-preloader" class="width-x container-fluid"><span class="spinner"></span></div>
+		<script src="js/jquery-1.3.2.min.js" type="text/javascript"></script>
+
 	<!-- Панель меню -->
 		<div class="container-fluid nopadding bg-y">
 			<div class="col-xs-10">
@@ -112,18 +114,38 @@
            				<div class="width-x height-m result bg-bh">
            				    <div class="text-center fnt-r fc-w result-border padding-x">
            				      <h1 class="result-text nomargin">Ваша скорость чтения:</h1>
-           				      <h1 class=" fnt-bi result-speed nomargin"><?=$speed?></h1>
+           				      <h1 id="speed" class=" fnt-bi result-speed nomargin"><?=$speed?></h1>
            				      <h1 class="result-text nomargin">символов в минуту</h1>
            				    </div>      
            				</div>
 					</div>
                    <script type="text/javascript">
                    	function wpost(msg)	{	VK.api('wall.post',	{message:msg},	function(data){ if (data.response) { console.log(data) }} )	}
-                   	$(document).ready(function(){	
-                              var speed = $("#speed").text();
-                              post = "Моя скорость чтения: "+speed+" символов в минуту. Измерено при помощи приложения: https://vk.com/app4295493_9664895" ; 
+                   	function howDays(speed,book,hid){ var countDay = speed*(hid*60);  return round(book/countDay); }
+                   	var declOfNum = function(number, titles)
+					{  
+					    var  cases = [2, 0, 1, 1, 1, 2];  
+					    return titles[ 
+					            (number % 100 > 4 && number % 100 < 20) 
+					            ? 
+					            2 
+					            : 
+					            cases[(number % 10 < 5) ? number % 10 : 5] 
+					    ];  
+					} 
+                   	$(document).ready(function(){
+                   			//hour in day
+                            var speed = <?=$speed?>, WaP = 2500000, hid = 2;
+                            var days = howDays(speed,WaP,hid);
+                            post = "Я бы прочитал \"Войну и Мир\" за " + days + declOfNum(days, ['день', 'дня', 'дней']) + ". Моя сорость чтения: " + speed + " символов в минуту. А как быстро читаешь ты? Проверь тут — https://vk.com/app4295493";
+                            //post = "Моя скорость чтения: "+speed+" символов в минуту. Измерено при помощи приложения: https://vk.com/app4295493_9664895" ; 
                               /* Инициализируем API VK */
- 								VK.init(function() { wpost(post);  console.log('Пост');}, function() {}, '5.21'); 
+ 								VK.init(function() {
+
+ 								 wpost(post);  console.log('Пост');
+
+
+ 								}, function() {}, '5.21'); 
                             });
                    </script>
 				<?php endif; ?>
@@ -179,10 +201,35 @@
 
 		</div>
 	<!-- Конец котент -->
-		<script src="js/jquery-1.3.2.min.js" type="text/javascript"></script>
 		<script type="text/javascript" src="/js/slidr.min.js"></script>
         <script src="//vk.com/js/api/xd_connection.js?2"  type="text/javascript"></script>
         <script src="js/my.js" type="text/javascript"></script>
+        <script>
+        	VK.init(function(){});
+				function autosize(width) {
+				    //Проверяем элемент body на наличие.
+				    if (!document.getElementById('body')) {
+				        alert('error');
+				        return;
+				    }
+				    // Успешно ли подключен ВК скрипт
+				    if (typeof VK.callMethod != 'undefined') {
+				    /*
+				    Вызываем функцию vk js api для управления окном.
+				    VK.callMethod('функция', параметры)
+				    В данном случае у нас - VK.callMethod('изменение_размеров_окна', ширина, высота);
+				    Так же добавляем еще 60 пикселей что бы было небольшое расстояние.
+				    */
+				        VK.callMethod('resizeWindow', 840, document.getElementById('body').clientHeight + 60);
+				    } else {
+				    alert('error #2');
+				    }
+			}
+			$(document).ready( function(){
+			    //Вызываем функцию регулировки высоты каждые пол секунды.
+			    setInterval('autosize(607)', 500);
+			});
+          </script>
 	</body>
 </html>
 <?php endif; ?>

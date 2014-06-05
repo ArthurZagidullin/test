@@ -70,8 +70,8 @@ class Text
 		}
 		if($right)
 			return $right;
-		else
-			return FALSE;
+		
+		return FALSE;
 
 	}
 	function getText()
@@ -128,8 +128,8 @@ class Question
 	{
 		if ($qk = array_search($id, $this->questions))
 			return $this->q($this->questions[$qk]);
-		else
-			return FALSE;
+		
+		return FALSE;
 	}
 }
 class Option
@@ -199,8 +199,8 @@ class Quiz
 			$this->speed = round(($x/$t)*$c);
 			if ($this->speed)
 				return $this->speed;
-			else
-				return FALSE;
+			
+			return FALSE;
 	}
 }
 class User
@@ -250,8 +250,8 @@ class User
 
 		if (!is_null($user))
 			return $user;
-		else
-			return FALSE;
+		
+		return FALSE;
 	}
 	private function setUser($uid)
 	{
@@ -262,8 +262,8 @@ class User
 		$id = $this->db->insert('users', $data);
 		if ($id)
 			return $this->getUser($uid);
-		else
-			return FALSE;
+		
+		return FALSE;
 
 	}
 	function setOld($rt,$cu,$speed)
@@ -278,12 +278,15 @@ class User
 						'speed' => $speed,
 						'time' => time(),
 						);
-			$id = $this->db->insert('old', $data);
-			//print_r($data);
+			$id=1;
+			if ($this->id !== 5) {
+				$id = $this->db->insert('old', $data);
+			}
+
 			if($id)
 				return $id;
-			else
-				return FALSE;
+			
+			return FALSE;
 		}
 	}
 }
